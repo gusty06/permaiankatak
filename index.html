@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FROGGY – Game Edukasi Perkalian & Pembagian Kelas 2 SD</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka & Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        poppins: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        frogGreen: '#4ade80',
+                        frogDark: '#16a34a',
+                        pondBlue: '#0284c7',
+                        pondLight: '#e0f2fe',
+                        lilyPad: '#86efac',
+                        sunYellow: '#facc15',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Fredoka', cursive, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        /* Custom Animations */
+        @keyframes floatCloud {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(calc(100vw + 100px)); }
+        }
+        @keyframes ripple {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+        @keyframes jumpFrog {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-70px) scale(1.1) rotate(5deg); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        @keyframes fallFrog {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            50% { transform: translateY(40px) rotate(45deg); opacity: 0.8; }
+            100% { transform: translateY(90px) rotate(90deg); opacity: 0; }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(74, 222, 128, 0.6); }
+            50% { shadow: 0 0 30px rgba(74, 222, 128, 0.9); }
+        }
+        .cloud-animation {
+            animation: floatCloud 25s linear infinite;
+        }
+        .cloud-slow {
+            animation: floatCloud 38s linear infinite;
+        }
+        .ripple-effect {
+            animation: ripple 0.8s ease-out forwards;
+        }
+        .jump-anim {
+            animation: jumpFrog 0.6s ease-in-out;
+        }
+        .fall-anim {
+            animation: fallFrog 0.7s ease-in forwards;
+        }
+        .glow-btn {
+            animation: pulseGlow 2s infinite;
+        }
+        /* Custom scrollbar for small screens */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #16a34a;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-sky-300 via-sky-400 to-teal-500 min-h-screen text-slate-800 overflow-x-hidden relative flex flex-col justify-between">
+
+    <!-- TOP BAR (Home, Audio Toggle, & Fullscreen) -->
+    <header class="absolute top-4 right-4 z-50 flex items-center gap-2 md:gap-3">
+        <!-- Tombol Kembali ke Halaman Utama -->
+        <button id="homeTopBtn" onclick="goToScreen('homeScreen')" class="bg-white/90 hover:bg-white text-teal-700 p-3 rounded-full shadow-lg transition transform hover:scale-110 flex items-center justify-center w-12 h-12 border-2 border-teal-500" title="Kembali ke Halaman Utama">
+            <i class="fa-solid fa-house text-xl"></i>
+        </button>
+        <!-- Tombol Audio -->
+        <button id="audioToggleBtn" onclick="toggleAudio()" class="bg-white/90 hover:bg-white text-teal-700 p-3 rounded-full shadow-lg transition transform hover:scale-110 flex items-center justify-center w-12 h-12 border-2 border-teal-500" title="Suara On/Off">
+            <i id="audioIcon" class="fa-solid fa-volume-high text-xl"></i>
+        </button>
+        <!-- Tombol Fullscreen -->
+        <button onclick="toggleFullScreen()" class="bg-white/90 hover:bg-white text-teal-700 p-3 rounded-full shadow-lg transition transform hover:scale-110 flex items-center justify-center w-12 h-12 border-2 border-teal-500" title="Layar Penuh">
+            <i id="fullscreenIcon" class="fa-solid fa-expand text-xl"></i>
+        </button>
+    </header>
+
+    <!-- BACKGROUND DECORATIONS -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <!-- Clouds -->
+        <div class="absolute top-10 left-[-100px] cloud-animation opacity-80">
+            <div class="bg-white/80 rounded-full h-12 w-32 shadow-md relative">
+                <div class="absolute -top-6 left-6 bg-white/80 rounded-full h-14 w-14"></div>
+                <div class="absolute -top-4 left-16 bg-white/80 rounded-full h-12 w-16"></div>
+            </div>
+        </div>
+        <div class="absolute top-28 left-[-150px] cloud-slow opacity-60">
+            <div class="bg-white/80 rounded-full h-10 w-28 shadow-md relative">
+                <div class="absolute -top-5 left-5 bg-white/80 rounded-full h-12 w-12"></div>
+            </div>
+        </div>
+        <!-- Water lilies and ripples on bottom background -->
+        <div class="absolute bottom-0 w-full h-32 bg-gradient-to-t from-teal-700/40 to-transparent pointer-events-none"></div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="relative z-10 flex-grow flex flex-col items-center justify-center p-4 max-w-7xl mx-auto w-full">
+
+        <!-- 1. HOME SCREEN -->
+        <div id="homeScreen" class="flex flex-col items-center text-center w-full max-w-2xl py-8">
+            <!-- Floating Mascot Frog -->
+            <div class="relative mb-6">
+                <div class="w-36 h-36 bg-gradient-to-tr from-green-400 to-emerald-500 rounded-full shadow-2xl flex items-center justify-center border-4 border-white glow-btn relative overflow-hidden animate-bounce">
+                    <!-- Cute Frog Mascot Image -->
+                    <img src="https://imgur.com/E0MNcPy.jpg" alt="Froggy Mascot" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/150x150/4ade80/ffffff?text=FROGGY';">
+                </div>
+                <!-- Lily pad base -->
+                <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-48 h-12 bg-emerald-600 rounded-full opacity-80 shadow-lg -z-10"></div>
+            </div>
+
+            <!-- Title & Tagline -->
+            <h1 class="text-4xl md:text-5xl font-extrabold text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] tracking-wide mb-1">
+                LILYPAD MATH QUEST
+            </h1>
+            <p class="text-sm md:text-base font-bold text-teal-900 bg-white/80 px-4 py-1 rounded-full shadow mb-2 font-poppins">
+                Karya: Gusti Noviyani, S.Pd., Gr
+            </p>
+            <p class="text-xl md:text-2xl font-bold text-yellow-200 drop-shadow mb-6">
+                "Belajar Matematika Sambil Melompat!"
+            </p>
+            <p class="text-white/90 text-sm md:text-base mb-8 max-w-md font-poppins">
+                Petualangan seru perkalian dan pembagian matematika kelas 2 SD di atas daun teratai kolam katak!
+            </p>
+
+            <!-- Menu Buttons -->
+            <div class="flex flex-col gap-4 w-full max-w-xs">
+                <button onclick="goToScreen('modeScreen')" class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold text-xl py-4 px-8 rounded-2xl shadow-xl transform transition hover:scale-105 border-b-4 border-emerald-800 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-play text-yellow-300"></i> MULAI BERMAIN
+                </button>
+                <button onclick="goToScreen('instructionScreen')" class="bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-emerald-950 font-bold text-lg py-3 px-8 rounded-2xl shadow-lg transform transition hover:scale-105 border-b-4 border-amber-600 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-book-open"></i> PETUNJUK
+                </button>
+                <button onclick="goToScreen('settingsScreen')" class="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold text-lg py-3 px-8 rounded-2xl shadow-lg transform transition hover:scale-105 border-b-4 border-blue-800 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-gear"></i> PENGATURAN
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. MODE SELECTION SCREEN -->
+        <div id="modeScreen" class="hidden flex flex-col items-center text-center w-full max-w-4xl py-6">
+            <h2 class="text-3xl md:text-4xl font-extrabold text-white drop-shadow mb-2">PILIH MODE PERMAINAN</h2>
+            <p class="text-white/90 text-sm md:text-base mb-8 font-poppins">Main sendiri atau tantang temanmu dalam satu perangkat!</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl mb-8">
+                <!-- Solo Mode -->
+                <div onclick="selectMode('solo')" class="bg-white/90 hover:bg-white p-6 rounded-3xl shadow-xl border-4 border-emerald-400 cursor-pointer transform transition hover:scale-105 flex flex-col items-center group">
+                    <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-4 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white transition">
+                        <i class="fa-solid fa-user text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-emerald-800 mb-2">SOLO MODE</h3>
+                    <p class="text-sm text-slate-600 font-poppins">Main mandiri, latih kecepatan dan ketepatan matematika-mu.</p>
+                </div>
+
+                <!-- Duel Mode -->
+                <div onclick="selectMode('duel')" class="bg-white/90 hover:bg-white p-6 rounded-3xl shadow-xl border-4 border-amber-400 cursor-pointer transform transition hover:scale-105 flex flex-col items-center group">
+                    <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mb-4 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition">
+                        <i class="fa-solid fa-user-group text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-amber-800 mb-2">DUEL MODE</h3>
+                    <p class="text-sm text-slate-600 font-poppins">2 Pemain bersaing secara berdampingan (Split Screen).</p>
+                </div>
+
+                <!-- Squad Mode -->
+                <div onclick="selectMode('squad')" class="bg-white/90 hover:bg-white p-6 rounded-3xl shadow-xl border-4 border-sky-400 cursor-pointer transform transition hover:scale-105 flex flex-col items-center group">
+                    <div class="w-20 h-20 bg-sky-100 rounded-full flex items-center justify-center mb-4 text-sky-600 group-hover:bg-sky-500 group-hover:text-white transition">
+                        <i class="fa-solid fa-users text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-sky-800 mb-2">SQUAD MODE</h3>
+                    <p class="text-sm text-slate-600 font-poppins">4 Pemain bertarung seru dalam grid 2 × 2!</p>
+                </div>
+            </div>
+
+            <button onclick="goToScreen('homeScreen')" class="bg-white/80 hover:bg-white text-slate-700 font-bold py-2.5 px-6 rounded-xl shadow-md transition flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Kembali ke Menu
+            </button>
+        </div>
+
+        <!-- 3. SETTINGS SCREEN -->
+        <div id="settingsScreen" class="hidden flex flex-col items-center text-center w-full max-w-xl py-6 bg-white/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border-4 border-teal-300">
+            <h2 class="text-3xl font-extrabold text-teal-800 mb-6"><i class="fa-solid fa-gear mr-2"></i> PENGATURAN PERMAINAN</h2>
+
+            <div class="w-full flex flex-col gap-5 text-left mb-8 font-poppins">
+                <!-- Materi Soal -->
+                <div>
+                    <label class="block font-bold text-slate-700 mb-2">Materi Matematika:</label>
+                    <select id="settingOperation" class="w-full p-3 rounded-xl border-2 border-slate-300 focus:border-teal-500 focus:outline-none font-semibold text-slate-700">
+                        <option value="both">Perkalian & Pembagian (Campuran)</option>
+                        <option value="multiplication">Perkalian Saja (×)</option>
+                        <option value="division">Pembagian Saja (÷)</option>
+                    </select>
+                </div>
+
+                <!-- Tingkat Kesulitan -->
+                <div>
+                    <label class="block font-bold text-slate-700 mb-2">Tingkat Kesulitan:</label>
+                    <select id="settingDifficulty" class="w-full p-3 rounded-xl border-2 border-slate-300 focus:border-teal-500 focus:outline-none font-semibold text-slate-700">
+                        <option value="easy">Mudah (Angka 1 - 5)</option>
+                        <option value="medium" selected>Sedang (Angka 1 - 8)</option>
+                        <option value="hard">Sulit (Angka 1 - 10)</option>
+                    </select>
+                </div>
+
+                <!-- Jumlah Soal -->
+                <div>
+                    <label class="block font-bold text-slate-700 mb-2">Jumlah Soal per Ronde:</label>
+                    <select id="settingQuestions" class="w-full p-3 rounded-xl border-2 border-slate-300 focus:border-teal-500 focus:outline-none font-semibold text-slate-700">
+                        <option value="10">10 Soal</option>
+                        <option value="15" selected>15 Soal</option>
+                        <option value="20">20 Soal</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex gap-4 w-full">
+                <button onclick="saveSettings()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                    Simpan & Main
+                </button>
+                <button onclick="goToScreen('homeScreen')" class="flex-1 bg-slate-300 hover:bg-slate-400 text-slate-700 font-bold py-3 rounded-xl shadow transition">
+                    Kembali
+                </button>
+            </div>
+        </div>
+
+        <!-- 4. INSTRUCTION SCREEN -->
+        <div id="instructionScreen" class="hidden flex flex-col items-center text-center w-full max-w-2xl py-6 bg-white/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border-4 border-amber-300">
+            <h2 class="text-3xl font-extrabold text-amber-800 mb-6"><i class="fa-solid fa-book-open mr-2"></i> PETUNJUK PERMAINAN</h2>
+
+            <div class="flex flex-col gap-4 text-left w-full mb-8 font-poppins text-slate-700">
+                <div class="flex items-start gap-3 bg-amber-50 p-3 rounded-xl border border-amber-200">
+                    <span class="bg-amber-500 text-white font-bold w-7 h-7 rounded-full flex items-center justify-center shrink-0">1</span>
+                    <p>Pilih mode permainan: <b>Solo</b> (1 pemain), <b>Duel</b> (2 pemain), atau <b>Squad</b> (4 pemain).</p>
+                </div>
+                <div class="flex items-start gap-3 bg-amber-50 p-3 rounded-xl border border-amber-200">
+                    <span class="bg-amber-500 text-white font-bold w-7 h-7 rounded-full flex items-center justify-center shrink-0">2</span>
+                    <p>Perhatikan soal perkalian atau pembagian yang muncul di atas daun teratai katak.</p>
+                </div>
+                <div class="flex items-start gap-3 bg-amber-50 p-3 rounded-xl border border-amber-200">
+                    <span class="bg-amber-500 text-white font-bold w-7 h-7 rounded-full flex items-center justify-center shrink-0">3</span>
+                    <p>Klik salah satu dari 4 tombol jawaban atau gunakan shortcut keyboard (<span class="text-xs bg-slate-200 px-1.5 py-0.5 rounded font-mono">1-4</span> untuk P1, <span class="text-xs bg-slate-200 px-1.5 py-0.5 rounded font-mono">Q,W,E,R</span> untuk P2).</p>
+                </div>
+                <div class="flex items-start gap-3 bg-amber-50 p-3 rounded-xl border border-amber-200">
+                    <span class="bg-amber-500 text-white font-bold w-7 h-7 rounded-full flex items-center justify-center shrink-0">4</span>
+                    <p><b>Benar:</b> Katak melompat ke daun berikutnya dan skor bertambah +10 poin! (Bonus beruntun +5).</p>
+                </div>
+                <div class="flex items-start gap-3 bg-amber-50 p-3 rounded-xl border border-amber-200">
+                    <span class="bg-amber-500 text-white font-bold w-7 h-7 rounded-full flex items-center justify-center shrink-0">5</span>
+                    <p><b>Salah:</b> Katak jatuh ke kolam air, lalu kembali ke posisi awal untuk soal berikutnya.</p>
+                </div>
+                <div class="flex items-start gap-3 bg-amber-50 p-3 rounded-xl border border-amber-200">
+                    <span class="bg-amber-500 text-white font-bold w-7 h-7 rounded-full flex items-center justify-center shrink-0">6</span>
+                    <p>Kumpulkan skor terbanyak dan jadilah katak paling pintar matematika!</p>
+                </div>
+            </div>
+
+            <button onclick="goToScreen('homeScreen')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition">
+                Mengerti, Ayo Main!
+            </button>
+        </div>
+
+        <!-- 5. GAMEPLAY SCREEN -->
+        <div id="gameScreen" class="hidden flex flex-col w-full h-[88vh] max-h-[850px]">
+            <!-- In-Game Header / Status Bar -->
+            <div class="bg-white/80 backdrop-blur-md rounded-2xl p-3 shadow-md mb-3 flex items-center justify-between border-2 border-teal-400">
+                <div class="flex items-center gap-3">
+                    <button onclick="pauseGame()" class="bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-xl font-bold shadow text-sm transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-pause"></i> Pause
+                    </button>
+                    <span id="gameModeTitle" class="font-extrabold text-teal-800 text-base md:text-lg">SOLO MODE</span>
+                </div>
+                <div id="gameGlobalInfo" class="flex items-center gap-4 text-sm font-bold text-slate-700">
+                    <span id="progressIndicator">Soal: 1 / 15</span>
+                </div>
+            </div>
+
+            <!-- Dynamic Game Arena Container (Solo: 1 col, Duel: 2 col, Squad: 4 sejajar vertikal) -->
+            <div id="gameArenaContainer" class="flex-grow grid grid-cols-1 gap-3 overflow-y-auto">
+                <!-- Injected via JavaScript -->
+            </div>
+        </div>
+
+        <!-- 6. PAUSE MODAL -->
+        <div id="pauseModal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full text-center shadow-2xl border-4 border-teal-500 animate-bounce-in">
+                <h3 class="text-3xl font-extrabold text-teal-800 mb-4">PERMAINAN DIJEDA</h3>
+                <div class="flex flex-col gap-3 font-poppins">
+                    <button onclick="resumeGame()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play"></i> Lanjutkan
+                    </button>
+                    <button onclick="restartGame()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl shadow transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i> Main Ulang
+                    </button>
+                    <button onclick="quitToMenu()" class="bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-xl shadow transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-house"></i> Keluar ke Menu
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. RESULT / GAME OVER SCREEN -->
+        <div id="resultScreen" class="hidden flex flex-col items-center text-center w-full max-w-2xl py-6 bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl border-4 border-emerald-400">
+            <div class="w-24 h-24 bg-yellow-300 rounded-full flex items-center justify-center mb-4 shadow-xl border-4 border-white animate-bounce">
+                <i class="fa-solid fa-trophy text-5xl text-amber-600"></i>
+            </div>
+            <h2 id="resultTitle" class="text-3xl md:text-4xl font-extrabold text-emerald-800 mb-2">HEBAT! PETUALANGAN SELESAI</h2>
+            <p id="resultSubtitle" class="text-slate-600 font-poppins mb-6">Kamu berhasil menyelesaikan semua soal matematika dengan luar biasa!</p>
+
+            <!-- Results Summary Card -->
+            <div id="resultSummaryContent" class="w-full flex flex-col gap-4 mb-8 font-poppins">
+                <!-- Dynamically populated stats for players -->
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+                <button onclick="restartGame()" class="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> MAIN LAGI
+                </button>
+                <button onclick="goToScreen('homeScreen')" class="flex-1 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-house"></i> MENU UTAMA
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="relative z-10 text-center py-3 text-white/80 text-xs md:text-sm font-poppins">
+        Lilypad Math Quest • Oleh Gusti Noviyani, S.Pd., Gr • Edukasi Matematika Kelas 2 SD
+    </footer>
+
+    <!-- JAVASCRIPT GAME LOGIC -->
+    <script>
+        /* --- SOUND & AUDIO API (Web Audio API Synthesizer) --- */
+        let audioEnabled = true;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(type) {
+            if (!audioEnabled) return;
+            initAudio();
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'jump') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.setValueAtTime(600, now + 0.1);
+                    osc.frequency.setValueAtTime(800, now + 0.2);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(200, now);
+                    osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'splash') {
+                    // White noise generator for water splash
+                    const bufferSize = audioCtx.sampleRate * 0.4;
+                    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const output = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        output[i] = Math.random() * 2 - 1;
+                    }
+                    const whiteNoise = audioCtx.createBufferSource();
+                    whiteNoise.buffer = buffer;
+                    const filter = audioCtx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.setValueAtTime(800, now);
+                    filter.frequency.linearRampToValueAtTime(200, now + 0.4);
+                    whiteNoise.connect(filter);
+                    filter.connect(gain);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+                    whiteNoise.start(now);
+                } else if (type === 'win') {
+                    const notes = [400, 500, 600, 800];
+                    notes.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(freq, now + idx * 0.1);
+                        g.gain.setValueAtTime(0.3, now + idx * 0.1);
+                        g.gain.linearRampToValueAtTime(0.01, now + idx * 0.1 + 0.2);
+                        o.start(now + idx * 0.1);
+                        o.stop(now + idx * 0.1 + 0.2);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio error:", e);
+            }
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const icon = document.getElementById('audioIcon');
+            if (audioEnabled) {
+                icon.className = "fa-solid fa-volume-high text-xl";
+                playSound('correct');
+            } else {
+                icon.className = "fa-solid fa-volume-xmark text-xl text-rose-500";
+            }
+        }
+
+        /* --- FULLSCREEN API --- */
+        function toggleFullScreen() {
+            const icon = document.getElementById('fullscreenIcon');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log("Error attempting to enable fullscreen:", err);
+                });
+                icon.className = "fa-solid fa-compress text-xl";
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+                icon.className = "fa-solid fa-expand text-xl";
+            }
+        }
+
+        /* --- NAVIGATION SYSTEM --- */
+        const screens = ['homeScreen', 'modeScreen', 'settingsScreen', 'instructionScreen', 'gameScreen', 'resultScreen'];
+
+        function goToScreen(screenId) {
+            screens.forEach(s => {
+                const el = document.getElementById(s);
+                if (el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(screenId);
+            if (target) {
+                target.classList.remove('hidden');
+            }
+            playSound('jump');
+        }
+
+        /* --- GAME CONFIG & STATE --- */
+        let gameConfig = {
+            mode: 'solo', // 'solo', 'duel', 'squad'
+            operation: 'both', // 'both', 'multiplication', 'division'
+            difficulty: 'medium', // 'easy', 'medium', 'hard'
+            totalQuestions: 15
+        };
+
+        let players = [];
+
+        function selectMode(mode) {
+            gameConfig.mode = mode;
+            startGame();
+        }
+
+        function saveSettings() {
+            gameConfig.operation = document.getElementById('settingOperation').value;
+            gameConfig.difficulty = document.getElementById('settingDifficulty').value;
+            gameConfig.totalQuestions = parseInt(document.getElementById('settingQuestions').value);
+            goToScreen('modeScreen');
+        }
+
+        /* --- QUESTION BANK GENERATOR --- */
+        function generateQuestions(count, operation, difficulty) {
+            let maxVal = 5;
+            if (difficulty === 'medium') maxVal = 8;
+            if (difficulty === 'hard') maxVal = 10;
+
+            let qList = [];
+            let ops = ['mult', 'div'];
+            if (operation === 'multiplication') ops = ['mult'];
+            if (operation === 'division') ops = ['div'];
+
+            for (let i = 0; i < count; i++) {
+                let op = ops[Math.floor(Math.random() * ops.length)];
+                let qText = "";
+                let correctAns = 0;
+
+                if (op === 'mult') {
+                    let a = Math.floor(Math.random() * maxVal) + 1;
+                    let b = Math.floor(Math.random() * maxVal) + 1;
+                    qText = `${a} × ${b} = ?`;
+                    correctAns = a * b;
+                } else {
+                    let b = Math.floor(Math.random() * maxVal) + 1;
+                    let quotient = Math.floor(Math.random() * maxVal) + 1;
+                    let a = b * quotient;
+                    qText = `${a} ÷ ${b} = ?`;
+                    correctAns = quotient;
+                }
+
+                let choices = [correctAns];
+                while (choices.length < 4) {
+                    let offset = (Math.floor(Math.random() * 5) + 1) * (Math.random() < 0.5 ? 1 : -1);
+                    let wrongAns = correctAns + offset;
+                    if (wrongAns >= 0 && !choices.includes(wrongAns)) {
+                        choices.push(wrongAns);
+                    }
+                }
+                choices.sort(() => Math.random() - 0.5);
+
+                qList.push({
+                    question: qText,
+                    answer: correctAns,
+                    choices: choices
+                });
+            }
+            return qList;
+        }
+
+        /* --- START GAME --- */
+        function startGame() {
+            goToScreen('gameScreen');
+            
+            let playerCount = 1;
+            if (gameConfig.mode === 'duel') playerCount = 2;
+            if (gameConfig.mode === 'squad') playerCount = 4;
+
+            players = [];
+            for (let i = 0; i < playerCount; i++) {
+                players.push({
+                    id: i + 1,
+                    name: `Player ${i + 1}`,
+                    score: 0,
+                    currentQIndex: 0,
+                    questions: generateQuestions(gameConfig.totalQuestions, gameConfig.operation, gameConfig.difficulty),
+                    lives: 3,
+                    streak: 0,
+                    isAnimating: false
+                });
+            }
+
+            renderGameLayout();
+            updateGameUI();
+        }
+
+        function renderGameLayout() {
+            const container = document.getElementById('gameArenaContainer');
+            container.innerHTML = '';
+
+            let gridClass = "grid-cols-1";
+            if (gameConfig.mode === 'duel') gridClass = "grid-cols-1 md:grid-cols-2";
+            if (gameConfig.mode === 'squad') gridClass = "grid-cols-1"; // Diubah agar 4 area pemain berjajar vertikal ke bawah
+
+            container.className = `flex-grow grid ${gridClass} gap-3 overflow-y-auto p-1`;
+
+            players.forEach((p, index) => {
+                const pane = document.createElement('div');
+                pane.className = `bg-gradient-to-b from-sky-200 to-teal-300 rounded-2xl p-3 shadow-lg border-4 border-white flex flex-col justify-between relative overflow-hidden`;
+                if (gameConfig.mode === 'squad') {
+                    pane.className += " min-h-[380px]";
+                }
+                pane.id = `playerPane_${p.id}`;
+
+                pane.innerHTML = `
+                    <div class="flex items-center justify-between bg-white/80 px-2.5 py-1 rounded-xl shadow-sm text-xs font-bold text-slate-700 z-20">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <span>${p.name}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="pScore_${p.id}" class="text-emerald-700 font-extrabold">Skor: 0</span>
+                            <span id="pLives_${p.id}" class="text-rose-600 text-xs">❤️❤️❤️</span>
+                        </div>
+                    </div>
+
+                    <div class="relative flex-grow flex flex-col items-center justify-center my-1">
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
+                            <div class="w-36 h-36 rounded-full border-4 border-dashed border-teal-500 animate-spin" style="animation-duration: 30s;"></div>
+                        </div>
+
+                        <div id="frogContainer_${p.id}" class="relative z-10 transition-transform duration-300 mb-1">
+                            <img src="https://imgur.com/E0MNcPy.jpg" alt="Frog" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover shadow-xl border-2 border-white" id="frogSvg_${p.id}" onerror="this.onerror=null; this.src='https://placehold.co/100x100/4ade80/ffffff?text=Frog';">
+                        </div>
+                        <div class="w-28 h-8 bg-emerald-500 rounded-full shadow-md border-2 border-emerald-600 flex items-center justify-center text-[11px] font-bold text-white/90 z-0">
+                            Daun Teratai
+                        </div>
+                    </div>
+
+                    <div class="bg-white/95 rounded-2xl p-2.5 shadow-md z-20 border-2 border-teal-400">
+                        <div class="text-center font-extrabold text-lg text-teal-900 mb-2" id="questionText_${p.id}">
+                            2 × 3 = ?
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5" id="choicesContainer_${p.id}">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(pane);
+            });
+
+            document.getElementById('gameModeTitle').innerText = `${gameConfig.mode.toUpperCase()} MODE`;
+            updateGameUI();
+        }
+
+        function updateGameUI() {
+            players.forEach(p => {
+                if (p.currentQIndex >= p.questions.length) {
+                    checkGameCompletion();
+                    return;
+                }
+
+                const currentQ = p.questions[p.currentQIndex];
+                document.getElementById(`questionText_${p.id}`).innerText = currentQ.question;
+                document.getElementById(`pScore_${p.id}`).innerText = `Skor: ${p.score}`;
+                
+                let hearts = "";
+                for (let i = 0; i < p.lives; i++) hearts += "❤️";
+                document.getElementById(`pLives_${p.id}`).innerText = hearts;
+
+                const choicesEl = document.getElementById(`choicesContainer_${p.id}`);
+                choicesEl.innerHTML = '';
+                currentQ.choices.forEach((choice, idx) => {
+                    let shortcutKey = "";
+                    if (p.id === 1) shortcutKey = `[${idx + 1}]`;
+                    if (p.id === 2) shortcutKey = `[${['Q','W','E','R'][idx]}]`;
+
+                    const btn = document.createElement('button');
+                    btn.className = `bg-gradient-to-r from-teal-500 to-sky-600 hover:from-teal-600 hover:to-sky-700 text-white font-bold py-2.5 px-3 rounded-xl shadow text-base md:text-lg transition transform hover:scale-105 border-b-4 border-teal-800 flex items-center justify-center gap-2`;
+                    btn.innerHTML = `<span>${choice}</span> <span class="text-xs opacity-70 font-mono">${shortcutKey}</span>`;
+                    btn.onclick = () => handleAnswer(p.id, choice);
+                    choicesEl.appendChild(btn);
+                });
+            });
+
+            const maxQIndex = Math.max(...players.map(p => p.currentQIndex));
+            document.getElementById('progressIndicator').innerText = `Progres: ${Math.min(maxQIndex + 1, gameConfig.totalQuestions)} / ${gameConfig.totalQuestions}`;
+        }
+
+        /* --- HANDLE PLAYER ANSWER --- */
+        function handleAnswer(playerId, selectedChoice) {
+            const p = players.find(x => x.id === playerId);
+            if (!p || p.isAnimating || p.currentQIndex >= p.questions.length) return;
+
+            const currentQ = p.questions[p.currentQIndex];
+            const isCorrect = (selectedChoice === currentQ.answer);
+            const frogSvg = document.getElementById(`frogSvg_${p.id}`);
+            const pane = document.getElementById(`playerPane_${p.id}`);
+
+            p.isAnimating = true;
+
+            if (isCorrect) {
+                playSound('correct');
+                playSound('jump');
+                p.score += 10;
+                p.streak++;
+                if (p.streak >= 3) {
+                    p.score += 5;
+                    p.streak = 0;
+                }
+                
+                if (frogSvg) frogSvg.classList.add('jump-anim');
+
+                setTimeout(() => {
+                    if (frogSvg) frogSvg.classList.remove('jump-anim');
+                    p.currentQIndex++;
+                    p.isAnimating = false;
+                    updateGameUI();
+                }, 600);
+
+            } else {
+                playSound('wrong');
+                playSound('splash');
+                p.streak = 0;
+                p.lives--;
+
+                if (frogSvg) frogSvg.classList.add('fall-anim');
+
+                const ripple = document.createElement('div');
+                ripple.className = "absolute bottom-12 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-blue-400 rounded-full pointer-events-none ripple-effect";
+                pane.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 800);
+
+                setTimeout(() => {
+                    if (frogSvg) frogSvg.classList.remove('fall-anim');
+                    if (p.lives <= 0) {
+                        p.currentQIndex = p.questions.length;
+                    } else {
+                        p.currentQIndex++;
+                    }
+                    p.isAnimating = false;
+                    updateGameUI();
+                }, 750);
+            }
+        }
+
+        /* --- KEYBOARD CONTROLS FOR MULTIPLAYER --- */
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toUpperCase();
+            if (document.getElementById('gameScreen').classList.contains('hidden')) return;
+
+            if (players.length >= 1 && ['1','2','3','4'].includes(key)) {
+                const idx = parseInt(key) - 1;
+                const p = players[0];
+                if (p.currentQIndex < p.questions.length) {
+                    const choices = p.questions[p.currentQIndex].choices;
+                    if (choices[idx] !== undefined) handleAnswer(1, choices[idx]);
+                }
+            }
+
+            if (players.length >= 2 && ['Q','W','E','R'].includes(key)) {
+                const mapKey = {'Q':0, 'W':1, 'E':2, 'R':3};
+                const idx = mapKey[key];
+                const p = players[1];
+                if (p.currentQIndex < p.questions.length) {
+                    const choices = p.questions[p.currentQIndex].choices;
+                    if (choices[idx] !== undefined) handleAnswer(2, choices[idx]);
+                }
+            }
+        });
+
+        /* --- GAME COMPLETION & RESULTS --- */
+        function checkGameCompletion() {
+            const allFinished = players.every(p => p.currentQIndex >= p.questions.length || p.lives <= 0);
+            if (allFinished) {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            playSound('win');
+            goToScreen('resultScreen');
+
+            const summaryContainer = document.getElementById('resultSummaryContent');
+            summaryContainer.innerHTML = '';
+
+            let sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+
+            sortedPlayers.forEach((p, rankIdx) => {
+                let badgeColor = "bg-emerald-100 text-emerald-800 border-emerald-300";
+                if (rankIdx === 0 && players.length > 1) badgeColor = "bg-amber-100 text-amber-800 border-amber-400 font-bold";
+
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-2xl border-2 ${badgeColor} flex items-center justify-between shadow-sm`;
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold">#${rankIdx + 1}</span>
+                        <div>
+                            <h4 class="font-extrabold text-lg text-slate-800">${p.name}</h4>
+                            <p class="text-xs text-slate-600">Skor: <span class="font-bold text-teal-700">${p.score}</span></p>
+                        </div>
+                    </div>
+                    <div class="text-right text-sm">
+                        <span class="text-emerald-700 font-bold">Selesai</span>
+                    </div>
+                `;
+                summaryContainer.appendChild(card);
+            });
+
+            if (gameConfig.mode === 'solo') {
+                document.getElementById('resultTitle').innerText = "HEBAT! KAMU HEBAT!";
+                document.getElementById('resultSubtitle').innerText = "Kamu semakin pintar matematika! Teruslah berlatih.";
+            } else {
+                document.getElementById('resultTitle').innerText = `PEMENANG: ${sortedPlayers[0].name}!`;
+                document.getElementById('resultSubtitle').innerText = "Petualangan katak telah usai, selamat kepada sang juara!";
+            }
+        }
+
+        /* --- PAUSE & MENU CONTROLS --- */
+        function pauseGame() {
+            document.getElementById('pauseModal').classList.remove('hidden');
+        }
+
+        function resumeGame() {
+            document.getElementById('pauseModal').classList.add('hidden');
+        }
+
+        function restartGame() {
+            document.getElementById('pauseModal').classList.add('hidden');
+            startGame();
+        }
+
+        function quitToMenu() {
+            document.getElementById('pauseModal').classList.add('hidden');
+            goToScreen('homeScreen');
+        }
+    </script>
+</body>
+</html>
